@@ -1,2 +1,6 @@
 node_modules/
 .env
+*.log
+public/
+app.js
+package*.json
