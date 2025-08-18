@@ -16,7 +16,7 @@ A beautiful, modern todo application built with vanilla JavaScript and Tailwind 
 
 ## 🚀 Live Demo
 
-[View the live demo on GitHub Pages](https://yourusername.github.io/your-repo-name/)
+[View the live demo on GitHub Pages](https://developer-az.github.io/my-todo-app/)
 
 ## 🛠️ Technologies Used
 
