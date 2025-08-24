@@ -4,3 +4,8 @@ node_modules/
 public/
 app.js
 package*.json
+
+# Temporary files
+/tmp/
+*.tmp
+.DS_Store
