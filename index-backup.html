@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Todo App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'slide-down': 'slideDown 0.3s ease-out',
+                        'fade-in': 'fadeIn 0.2s ease-out',
+                        'fade-out': 'fadeOut 0.2s ease-out',
+                        'bounce-in': 'bounceIn 0.4s ease-out',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes slideUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .glassmorphism {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg transition-all duration-500">
+    <div class="min-h-screen p-4 flex items-center justify-center">
+        <div class="w-full max-w-md">
+            <!-- Header -->
+            <div class="text-center mb-8 animate-slide-down">
+                <h1 class="text-4xl font-bold text-white mb-2">🧠 Smart Todo</h1>
+                <p class="text-white/80">AI-powered productivity assistant</p>
+            </div>
+
+            <!-- Main Container -->
+            <div class="glassmorphism rounded-2xl p-6 shadow-2xl animate-bounce-in">
+                <!-- Theme Toggle & Insights -->
+                <div class="flex justify-between items-center mb-4">
+                    <button onclick="app.showInsights()" class="p-2 rounded-full glassmorphism hover:bg-white/20 transition-all duration-300 text-white" title="View Analytics">
+                        📊
+                    </button>
+                    <button id="themeToggle" class="p-2 rounded-full glassmorphism hover:bg-white/20 transition-all duration-300 text-white">
+                        <svg id="sunIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <svg id="moonIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Add Todo Input -->
+                <div class="mb-6">
+                    <input 
+                        type="text" 
+                        id="todoInput" 
+                        placeholder="✨ Add an intelligent task... (try: 'Call doctor tomorrow #health')"
+                        class="w-full p-4 rounded-xl glassmorphism text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all duration-300"
+                    >
+                    <div class="text-xs text-white/60 mt-2">
+                        💡 Pro tip: Add #tags, mention priority keywords (urgent, important), and I'll analyze it automatically!
+                    </div>
+                </div>
+
+                <!-- Todo Stats -->
+                <div class="flex justify-between items-center mb-4 text-white/80 text-sm">
+                    <span id="todoCounter">0 items left</span>
+                    <button id="clearCompleted" class="hover:text-white transition-colors duration-200 opacity-0 pointer-events-none">
+                        Clear completed
+                    </button>
+                </div>
+
+
+
+                <!-- Todo List -->
+                <div id="todoList" class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
+                    <!-- Todos will be dynamically inserted here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="text-center py-8 text-white/60">
+                    <div class="text-4xl mb-2">📝</div>
+                    <p>No todos yet. Add one above!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .priority-low { color: #60a5fa; }
+        .priority-medium { color: #fbbf24; }
+        .priority-high { color: #fb923c; }
+        .priority-critical { color: #f87171; }
+        .analysis-popup { z-index: 1000; }
+    </style>
+
+    <script>
+        class SmartTodoApp {
+            constructor() {
+                this.todos = [];
+                this.nextId = 1;
+                this.categories = ['work', 'personal', 'health', 'learning', 'shopping', 'urgent'];
+                this.priorities = ['low', 'medium', 'high', 'critical'];
+                this.insights = {
+                    totalCompleted: 0,
+                    totalTime: 0,
+                    productivityScore: 0
+                };
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupTheme();
+                this.loadTodos();
+                this.render();
+            }
+
+            setupEventListeners() {
+                const input = document.getElementById('todoInput');
+                const themeToggle = document.getElementById('themeToggle');
+                const clearCompleted = document.getElementById('clearCompleted');
+
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && input.value.trim()) {
+                        this.addTodo(input.value.trim());
+                        input.value = '';
+                    }
+                });
+
+                themeToggle.addEventListener('click', () => this.toggleTheme());
+                clearCompleted.addEventListener('click', () => this.clearCompleted());
+            }
+
+            setupTheme() {
+                const isDark = localStorage.getItem('theme') === 'dark';
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    this.updateThemeIcon(true);
+                }
+            }
+
+            toggleTheme() {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                this.updateThemeIcon(isDark);
+            }
+
+            updateThemeIcon(isDark) {
+                const sunIcon = document.getElementById('sunIcon');
+                const moonIcon = document.getElementById('moonIcon');
+                
+                if (isDark) {
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                } else {
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                }
+            }
+
+            // Smart Analysis Methods
+            analyzeTaskText(text) {
+                const keywords = {
+                    work: ['meeting', 'project', 'deadline', 'presentation', 'email', 'call', 'client', 'report', 'document', 'review'],
+                    personal: ['family', 'friend', 'home', 'personal', 'self', 'hobby', 'vacation', 'birthday', 'anniversary'],
+                    health: ['doctor', 'gym', 'exercise', 'medication', 'appointment', 'health', 'workout', 'diet', 'wellness'],
+                    learning: ['learn', 'study', 'course', 'book', 'tutorial', 'practice', 'skill', 'education', 'research'],
+                    shopping: ['buy', 'purchase', 'shop', 'order', 'grocery', 'store', 'market', 'amazon', 'delivery'],
+                    urgent: ['urgent', 'asap', 'emergency', 'critical', 'deadline', 'important', 'priority', 'rush', 'today']
+                };
+
+                const priorityKeywords = {
+                    critical: ['critical', 'emergency', 'urgent', 'asap'],
+                    high: ['important', 'deadline', 'priority', 'rush', 'today'],
+                    medium: ['soon', 'this week', 'needed', 'should'],
+                    low: ['someday', 'maybe', 'eventually', 'when possible']
+                };
+
+                const lowerText = text.toLowerCase();
+                
+                // Analyze category
+                let category = 'personal';
+                let maxScore = 0;
+                
+                for (const [cat, words] of Object.entries(keywords)) {
+                    const score = words.filter(word => lowerText.includes(word)).length;
+                    if (score > maxScore) {
+                        maxScore = score;
+                        category = cat;
+                    }
+                }
+
+                // Analyze priority
+                let priority = 'medium';
+                for (const [prio, words] of Object.entries(priorityKeywords)) {
+                    if (words.some(word => lowerText.includes(word))) {
+                        priority = prio;
+                        break;
+                    }
+                }
+
+                // Estimate time (basic heuristic)
+                const wordCount = text.split(' ').length;
+                let estimatedMinutes = Math.max(15, Math.min(120, wordCount * 10));
+                
+                return {
+                    category,
+                    priority,
+                    estimatedMinutes,
+                    tags: this.extractTags(text)
+                };
+            }
+
+            extractTags(text) {
+                const tags = [];
+                const tagRegex = /#(\w+)/g;
+                let match;
+                while ((match = tagRegex.exec(text)) !== null) {
+                    tags.push(match[1].toLowerCase());
+                }
+                return tags;
+            }
+
+            generateTaskSuggestions(text) {
+                const suggestions = [];
+                const lowerText = text.toLowerCase();
+                
+                // Suggest breaking down complex tasks
+                if (text.length > 50 || text.includes(' and ') || text.includes(',')) {
+                    suggestions.push("💡 Consider breaking this into smaller tasks");
+                }
+                
+                // Suggest adding deadlines
+                if (!lowerText.includes('deadline') && !lowerText.includes('due') && !lowerText.includes('by')) {
+                    suggestions.push("⏰ Consider adding a deadline");
+                }
+                
+                // Suggest time blocking
+                if (lowerText.includes('meeting') || lowerText.includes('call')) {
+                    suggestions.push("📅 Schedule this in your calendar");
+                }
+                
+                return suggestions;
+            }
+
+            showTaskAnalysis(todo) {
+                // Show a brief analysis popup
+                const analysisDiv = document.createElement('div');
+                analysisDiv.className = 'fixed top-4 right-4 glassmorphism rounded-xl p-4 max-w-sm z-50 animate-slide-down';
+                
+                let tagsHtml = '';
+                if (todo.tags && todo.tags.length > 0) {
+                    const tagSpans = todo.tags.map(tag => `<span class="bg-white/20 px-2 py-1 rounded text-xs">#${tag}</span>`).join(' ');
+                    tagsHtml = `<div>🏷️ Tags: ${tagSpans}</div>`;
+                }
+                
+                let suggestionsHtml = '';
+                if (todo.suggestions && todo.suggestions.length > 0) {
+                    const suggestionDivs = todo.suggestions.map(s => `<div class="mb-1">${s}</div>`).join('');
+                    suggestionsHtml = `
+                        <div class="mt-3 pt-2 border-t border-white/20">
+                            <div class="text-xs text-white/80">
+                                ${suggestionDivs}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                analysisDiv.innerHTML = `
+                    <div class="text-white">
+                        <div class="flex items-center mb-2">
+                            <span class="text-lg">🤖</span>
+                            <span class="ml-2 font-semibold">Smart Analysis</span>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" class="ml-auto text-white/60 hover:text-white">✕</button>
+                        </div>
+                        <div class="text-sm space-y-1">
+                            <div>📂 Category: <span class="font-medium">${todo.category}</span></div>
+                            <div>⚡ Priority: <span class="font-medium priority-${todo.priority}">${todo.priority}</span></div>
+                            <div>⏱️ Est. time: <span class="font-medium">${todo.estimatedMinutes} min</span></div>
+                            ${tagsHtml}
+                        </div>
+                        ${suggestionsHtml}
+                    </div>
+                `;
+                
+                document.body.appendChild(analysisDiv);
+                
+                // Auto-remove after 8 seconds
+                setTimeout(() => {
+                    if (analysisDiv.parentNode) {
+                        analysisDiv.style.animation = 'fadeOut 0.3s ease-out forwards';
+                        setTimeout(() => analysisDiv.remove(), 300);
+                    }
+                }, 8000);
+            }
+
+            startTimer(id) {
+                const todo = this.todos.find(t => t.id === id);
+                if (!todo || todo.completed) return;
+                
+                todo.startTime = new Date().toISOString();
+                this.saveToLocalStorage();
+                this.render();
+            }
+
+            stopTimer(id) {
+                const todo = this.todos.find(t => t.id === id);
+                if (!todo || !todo.startTime) return;
+                
+                const startTime = new Date(todo.startTime);
+                const endTime = new Date();
+                const minutesSpent = Math.round((endTime - startTime) / 60000);
+                
+                todo.actualMinutes += minutesSpent;
+                todo.startTime = null;
+                this.saveToLocalStorage();
+                this.render();
+            }
+
+            // Local Storage Methods
+                try {
+                    localStorage.setItem('todos', JSON.stringify(this.todos));
+                    localStorage.setItem('nextId', this.nextId.toString());
+                } catch (error) {
+                    console.error('Failed to save to localStorage:', error);
+                }
+            }
+
+            loadFromLocalStorage() {
+                try {
+                    const stored = localStorage.getItem('todos');
+                    const storedNextId = localStorage.getItem('nextId');
+                    
+                    if (stored) {
+                        this.todos = JSON.parse(stored);
+                        this.nextId = storedNextId ? parseInt(storedNextId) : this.getNextId();
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Failed to load from localStorage:', error);
+                }
+                return false;
+            }
+
+            getNextId() {
+                if (this.todos.length === 0) return 1;
+                return Math.max(...this.todos.map(t => t.id)) + 1;
+            }
+
+            loadTodos() {
+                if (!this.loadFromLocalStorage()) {
+                    this.todos = [];
+                    this.nextId = 1;
+                }
+            }
+
+            addTodo(text) {
+                const analysis = this.analyzeTaskText(text);
+                const newTodo = {
+                    id: this.nextId++,
+                    text: text.trim(),
+                    completed: false,
+                    category: analysis.category,
+                    priority: analysis.priority,
+                    estimatedMinutes: analysis.estimatedMinutes,
+                    actualMinutes: 0,
+                    tags: analysis.tags,
+                    suggestions: this.generateTaskSuggestions(text),
+                    createdAt: new Date().toISOString(),
+                    startTime: null,
+                    completedAt: null
+                };
+
+                this.todos.unshift(newTodo); // Add to top for better UX
+                this.saveToLocalStorage();
+                this.render();
+                this.showTaskAnalysis(newTodo);
+            }
+
+            toggleTodo(id) {
+                const index = this.todos.findIndex(t => t.id === id);
+                if (index === -1) return;
+
+                const todo = this.todos[index];
+                todo.completed = !todo.completed;
+                todo.updatedAt = new Date().toISOString();
+                
+                // Track completion analytics
+                if (todo.completed) {
+                    todo.completedAt = new Date().toISOString();
+                    this.insights.totalCompleted++;
+                    if (todo.startTime) {
+                        this.stopTimer(id);
+                    }
+                } else {
+                    todo.completedAt = null;
+                    if (this.insights.totalCompleted > 0) {
+                        this.insights.totalCompleted--;
+                    }
+                }
+                
+                this.saveToLocalStorage();
+                this.render();
+                this.updateInsights();
+            }
+
+            updateTodo(id, text) {
+                const index = this.todos.findIndex(t => t.id === id);
+                if (index === -1) return;
+
+                const todo = this.todos[index];
+                todo.text = text.trim();
+                todo.updatedAt = new Date().toISOString();
+                
+                this.saveToLocalStorage();
+                this.render();
+            }
+
+            deleteTodo(id) {
+                const todoElement = document.querySelector(`[data-id="${id}"]`);
+                
+                // Add fade out animation
+                todoElement.style.animation = 'fadeOut 0.3s ease-out forwards';
+                
+                setTimeout(() => {
+                    this.todos = this.todos.filter(t => t.id !== id);
+                    this.saveToLocalStorage();
+                    this.render();
+                }, 300);
+            }
+
+            clearCompleted() {
+                this.todos = this.todos.filter(t => !t.completed);
+                this.saveToLocalStorage();
+                this.render();
+            }
+
+            render() {
+                const todoList = document.getElementById('todoList');
+                const emptyState = document.getElementById('emptyState');
+                const todoCounter = document.getElementById('todoCounter');
+                const clearCompleted = document.getElementById('clearCompleted');
+
+                if (this.todos.length === 0) {
+                    todoList.innerHTML = '';
+                    emptyState.style.display = 'block';
+                } else {
+                    emptyState.style.display = 'none';
+                    todoList.innerHTML = this.todos.map(todo => this.createTodoElement(todo)).join('');
+                }
+
+                // Update counter
+                const remaining = this.todos.filter(t => !t.completed).length;
+                todoCounter.textContent = `${remaining} item${remaining !== 1 ? 's' : ''} left`;
+
+                // Show/hide clear completed button
+                const hasCompleted = this.todos.some(t => t.completed);
+                if (hasCompleted) {
+                    clearCompleted.classList.remove('opacity-0', 'pointer-events-none');
+                } else {
+                    clearCompleted.classList.add('opacity-0', 'pointer-events-none');
+                }
+
+
+            }
+
+            createTodoElement(todo) {
+                const priorityColors = {
+                    low: 'text-blue-400',
+                    medium: 'text-yellow-400', 
+                    high: 'text-orange-400',
+                    critical: 'text-red-400'
+                };
+
+                const categoryIcons = {
+                    work: '💼',
+                    personal: '🏠',
+                    health: '🏥',
+                    learning: '📚',
+                    shopping: '🛒',
+                    urgent: '🚨'
+                };
+
+                const isRunning = todo.startTime && !todo.completed;
+                const timeSpent = todo.actualMinutes > 0 ? `${todo.actualMinutes}m` : '';
+                const estimated = todo.estimatedMinutes ? `~${todo.estimatedMinutes}m` : '';
+
+                return `
+                    <div data-id="${todo.id}" class="glassmorphism rounded-xl p-4 animate-slide-up group hover:bg-white/10 transition-all duration-300">
+                        <!-- Main content -->
+                        <div class="flex items-center space-x-3 mb-2">
+                            <button onclick="app.toggleTodo(${todo.id})" class="flex-shrink-0 w-6 h-6 rounded-full border-2 border-white/30 flex items-center justify-center transition-all duration-300 ${todo.completed ? 'bg-green-500 border-green-500' : 'hover:border-white/60'}">
+                                ${todo.completed ? '<svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>' : ''}
+                            </button>
+                            <div class="flex-1">
+                                <span ondblclick="app.editTodo(${todo.id})" class="text-white cursor-pointer transition-all duration-300 ${todo.completed ? 'line-through opacity-60' : ''}">${todo.text}</span>
+                            </div>
+                            <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                ${!todo.completed ? `
+                                    <button onclick="app.${isRunning ? 'stopTimer' : 'startTimer'}(${todo.id})" 
+                                            class="p-1 rounded hover:bg-white/20 transition-colors ${isRunning ? 'text-red-400' : 'text-green-400'}" 
+                                            title="${isRunning ? 'Stop timer' : 'Start timer'}">
+                                        ${isRunning ? '⏹️' : '▶️'}
+                                    </button>
+                                ` : ''}
+                                <button onclick="app.deleteTodo(${todo.id})" class="text-red-400 hover:text-red-300 transition-all duration-300 p-1">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Smart metadata -->
+                        <div class="flex items-center justify-between text-xs text-white/60">
+                            <div class="flex items-center space-x-3">
+                                <span class="flex items-center">
+                                    ${categoryIcons[todo.category] || '📋'} <span class="ml-1 capitalize">${todo.category}</span>
+                                </span>
+                                <span class="flex items-center ${priorityColors[todo.priority]}">
+                                    ⚡ <span class="ml-1 capitalize">${todo.priority}</span>
+                                </span>
+                                ${todo.tags && todo.tags.length > 0 ? `
+                                    <span class="flex items-center space-x-1">
+                                        ${todo.tags.map(tag => `<span class="bg-white/20 px-2 py-0.5 rounded text-xs">#${tag}</span>`).join('')}
+                                    </span>
+                                ` : ''}
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                ${timeSpent ? `<span class="text-green-400">${timeSpent}</span>` : ''}
+                                ${estimated && !todo.completed ? `<span class="text-yellow-400">${estimated}</span>` : ''}
+                                ${isRunning ? `<span class="animate-pulse text-red-400">●</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            editTodo(id) {
+                const todo = this.todos.find(t => t.id === id);
+                if (!todo || todo.completed) return;
+
+                const todoElement = document.querySelector(`[data-id="${id}"] span`);
+                const originalText = todo.text;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = originalText;
+                input.className = 'flex-1 bg-transparent text-white border-b-2 border-white/30 focus:border-white focus:outline-none px-2 py-1';
+                
+                todoElement.replaceWith(input);
+                input.focus();
+                input.select();
+
+                const saveEdit = () => {
+                    const newText = input.value.trim();
+                    if (newText && newText !== originalText) {
+                        this.updateTodo(id, newText);
+                    } else {
+                        this.render();
+                    }
+                };
+
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') saveEdit();
+                });
+
+                input.addEventListener('blur', saveEdit);
+            }
+
+            updateInsights() {
+                const completedTodos = this.todos.filter(t => t.completed);
+                const totalTime = completedTodos.reduce((sum, t) => sum + (t.actualMinutes || 0), 0);
+                
+                this.insights.totalCompleted = completedTodos.length;
+                this.insights.totalTime = totalTime;
+                
+                // Calculate productivity score based on completed vs estimated time
+                let accuracyScore = 0;
+                let validTasks = 0;
+                
+                completedTodos.forEach(todo => {
+                    if (todo.actualMinutes > 0 && todo.estimatedMinutes > 0) {
+                        const accuracy = 1 - Math.abs(todo.actualMinutes - todo.estimatedMinutes) / todo.estimatedMinutes;
+                        accuracyScore += Math.max(0, accuracy);
+                        validTasks++;
+                    }
+                });
+                
+                this.insights.productivityScore = validTasks > 0 ? Math.round((accuracyScore / validTasks) * 100) : 0;
+                this.saveToLocalStorage();
+            }
+
+            showInsights() {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+                modal.onclick = (e) => {
+                    if (e.target === modal) modal.remove();
+                };
+
+                const completedToday = this.todos.filter(t => {
+                    if (!t.completedAt) return false;
+                    const today = new Date().toDateString();
+                    const taskDate = new Date(t.completedAt).toDateString();
+                    return today === taskDate;
+                }).length;
+
+                const categoryStats = this.todos.reduce((acc, todo) => {
+                    acc[todo.category] = (acc[todo.category] || 0) + 1;
+                    return acc;
+                }, {});
+
+                modal.innerHTML = `
+                    <div class="glassmorphism rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-white">📊 Productivity Insights</h2>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                                    class="text-white/60 hover:text-white transition-colors text-xl">✕</button>
+                        </div>
+                        
+                        <div class="space-y-4 text-white">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="text-center p-3 bg-white/10 rounded-lg">
+                                    <div class="text-2xl font-bold text-green-400">${this.insights.totalCompleted}</div>
+                                    <div class="text-xs text-white/80">Tasks Completed</div>
+                                </div>
+                                <div class="text-center p-3 bg-white/10 rounded-lg">
+                                    <div class="text-2xl font-bold text-blue-400">${completedToday}</div>
+                                    <div class="text-xs text-white/80">Today</div>
+                                </div>
+                                <div class="text-center p-3 bg-white/10 rounded-lg">
+                                    <div class="text-2xl font-bold text-yellow-400">${Math.round(this.insights.totalTime / 60)}h</div>
+                                    <div class="text-xs text-white/80">Time Tracked</div>
+                                </div>
+                                <div class="text-center p-3 bg-white/10 rounded-lg">
+                                    <div class="text-2xl font-bold text-purple-400">${this.insights.productivityScore}%</div>
+                                    <div class="text-xs text-white/80">Accuracy Score</div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold mb-2">📈 Categories</h3>
+                                <div class="space-y-2">
+                                    ${Object.entries(categoryStats).map(([category, count]) => 
+                                        `<div class="flex justify-between items-center p-2 bg-white/5 rounded">
+                                            <span class="capitalize">${category}</span>
+                                            <span class="text-white/80">${count} tasks</span>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="pt-4 border-t border-white/20">
+                                <button onclick="app.exportData()" 
+                                        class="w-full p-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors">
+                                    📤 Export Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            }
+
+            exportData() {
+                const data = {
+                    todos: this.todos,
+                    insights: this.insights,
+                    exportDate: new Date().toISOString(),
+                    version: '2.0'
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `smart-todos-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Initialize the app
+        const app = new SmartTodoApp();
+    </script>
+</body>
+</html>
