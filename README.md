@@ -96,8 +96,8 @@ The AI automatically:
 
 2. Open `index.html` in your browser or serve it locally:
    ```bash
-   # Using Python
-   python -m http.server 8000
+   # Using Python 3 (recommended)
+   python3 -m http.server 8000
    
    # Using Node.js
    npx serve .
@@ -236,8 +236,8 @@ const priorityKeywords = {
    - Simply open `index.html` in your web browser
    - Or use a local server:
      ```bash
-     # Using Python 3
-     python -m http.server 8000
+     # Using Python 3 (recommended)
+     python3 -m http.server 8000
      
      # Using Node.js (if you have http-server installed)
      npx http-server
@@ -247,6 +247,33 @@ const priorityKeywords = {
      ```
 
 3. **Visit** `http://localhost:8000`
+
+## 🧪 Testing
+
+You can validate the AI features and app behavior directly from the command line using Node.js.
+
+Prerequisites:
+
+```bash
+node -v
+# Tested with Node v22, but any modern Node 18+ should work
+```
+
+Run the demo to see AI analysis and insights with sample tasks:
+
+```bash
+node demo-test.js
+```
+
+Run the comprehensive test suite for end-to-end checks:
+
+```bash
+node comprehensive-test.js
+```
+
+Notes:
+- If `python` is not found when starting the local server, use `python3 -m http.server 8000`.
+- After starting the server, open `http://localhost:8000` to view `index.html`.
 
 ## 📊 Analytics & Insights Dashboard
 
