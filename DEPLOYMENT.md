@@ -1,98 +1,25 @@
-# 🚀 GitHub Pages Deployment Guide
+# Deployment
 
-This todo app is now fully optimized for GitHub Pages deployment. Here's how to get it live:
+This app is static files only. GitHub Pages, Netlify, nginx, or `python3 -m http.server` all work.
 
-## Quick Deployment Steps
+## GitHub Pages
 
-### 1. Push to GitHub
+1. Push to GitHub
+2. Settings → Pages → Deploy from a branch
+3. Branch: `main`, folder: `/ (root)`
+4. App URL: `https://<user>.github.io/<repo>/`
+
+## Local
+
 ```bash
-git add .
-git commit -m "Add standalone todo app for GitHub Pages"
-git push origin main
+python3 -m http.server 8000
 ```
 
-### 2. Enable GitHub Pages
-1. Go to your repository on GitHub
-2. Click **Settings** tab
-3. Scroll down to **Pages** section (in the left sidebar)
-4. Under **Source**, select **Deploy from a branch**
-5. Choose **main** branch and **/ (root)** folder
-6. Click **Save**
+Then open `http://localhost:8000`.
 
-### 3. Your app will be live at:
-```
-https://yourusername.github.io/your-repo-name/
-```
+## Notes
 
-## What's Changed for GitHub Pages
-
-✅ **Removed all backend dependencies**
-- No more Express.js server
-- No more Node.js dependencies
-- No more API endpoints
-
-✅ **Pure frontend implementation**
-- All data stored in localStorage
-- Works completely offline
-- No server required
-
-✅ **Single file deployment**
-- Everything in `index.html`
-- No build process needed
-- Instant deployment
-
-✅ **GitHub Pages optimized**
-- Static file hosting
-- CDN delivery
-- HTTPS by default
-
-## Testing Locally
-
-Before deploying, test locally:
-```bash
-# Simply open index.html in your browser
-# Or use a local server:
-python -m http.server 8000
-# Then visit http://localhost:8000
-```
-
-## Features That Work Offline
-
-- ✅ Add new todos
-- ✅ Mark todos as complete/incomplete
-- ✅ Edit todo text (double-click)
-- ✅ Delete individual todos
-- ✅ Clear all completed todos
-- ✅ Theme switching (light/dark)
-- ✅ Data persistence across sessions
-- ✅ Responsive design
-
-## Troubleshooting
-
-**App not loading on GitHub Pages?**
-- Check that `index.html` is in the root directory
-- Ensure GitHub Pages is enabled in repository settings
-- Wait a few minutes for deployment to complete
-
-**Data not persisting?**
-- localStorage requires HTTPS (GitHub Pages provides this)
-- Check browser console for errors
-- Ensure JavaScript is enabled
-
-**Styling issues?**
-- Tailwind CSS is loaded from CDN
-- Check internet connection for CDN access
-- Verify browser compatibility
-
-## Custom Domain (Optional)
-
-To use a custom domain:
-1. Add a `CNAME` file to your repository root
-2. Add your domain name to the file
-3. Configure DNS settings with your domain provider
-4. Update GitHub Pages settings with your custom domain
-
----
-
-Your todo app is now ready for the world! 🌍
-
+- Data lives in the browser’s `localStorage` (`smart-todos`). Clearing site data deletes tasks.
+- Use Export / Import in the toolbar to move tasks between browsers.
+- HTTPS is required for `localStorage` on some browsers; GitHub Pages provides HTTPS.
+- There is no server, database, or CDN dependency besides the files in this repo.
